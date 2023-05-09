@@ -1,0 +1,26 @@
+import requests
+from telegram.ext import Updater, CommandHandler
+
+def start(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Привет! Я бот для отслеживания курса доллара США. Введите /usd для получения текущего курса.")
+
+def get_usd_price(update, context):
+    response = requests.get('https://api.coingecko.com/api/v3/simple/price?ids=usd&vs_currencies=rub')
+    if response.status_code == 200:
+        data = response.json()
+        usd_price = data['usd']['rub']
+        context.bot.send_message(chat_id=update.effective_chat.id, text=f"Текущий курс доллара США: {usd_price} рублей")
+    else:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Не удалось получить информацию о курсе доллара США.")
+
+# Замените 'YOUR_TELEGRAM_BOT_TOKEN' на токен вашего Telegram-бота
+updater = Updater(token='YOUR_TELEGRAM_BOT_TOKEN', use_context=True)
+dispatcher = updater.dispatcher
+
+start_handler = CommandHandler('start', start)
+usd_price_handler = CommandHandler('usd', get_usd_price)
+
+dispatcher.add_handler(start_handler)
+dispatcher.add_handler(usd_price_handler)
+
+updater.start_polling()
